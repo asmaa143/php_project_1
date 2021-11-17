@@ -1,3 +1,10 @@
+<?php
+require_once("includes/db.php");
+require_once("includes/functions.php");
+require_once("includes/sessions.php");
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -102,7 +109,7 @@
                     <div class="d-grid">
                         <a class="btn btn-success" href="comments.php">
                             <i class="fas fa-check"></i>
-                           Approve Comments
+                            Approve Comments
                         </a>
                     </div>
                 </div>
@@ -110,7 +117,81 @@
         </div>
     </header>
 
+    <section>
+        <div class="container py-2 mb-4">
+            <div class="row">
+                <div class="col-lg-12">
+                    <?php
+                    echo errorMessage();
+                    echo successMessage();
+                    ?>
 
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Tile</th>
+                                <th>Category</th>
+                                <th>Date&Time</th>
+                                <th>Author</th>
+                                <th>Bnner</th>
+                                <th>Comments</th>
+                                <th>Action</th>
+                                <th>Live Preview</th>
+                            </tr>
+                        </thead>
+                        <?php    
+                        $connectingDB;
+                        $sql="SELECT * FROM posts";
+                        $stmt=$connectingDB->query($sql);
+                        $sr=0;
+                        while($dataRows=$stmt->fetch()){
+                            $Id=$dataRows["id"];
+                            $dateTime=$dataRows["datetime"];
+                            $title=$dataRows["title"];
+                            $category=$dataRows["category"];
+                            $admin=$dataRows["author"];
+                            $image=$dataRows["image"];
+                            $post=$dataRows["post"];
+                            $sr++; 
+                        ?>
+                        <tbody>
+                            <tr>
+                                <td><?php echo $sr?></td>
+                                <td>
+                                    <?php 
+                                       if(strlen($title)>20){
+                                           $title=substr($title,0,18).'...';
+                                       }
+                                       echo $title;
+                                    ?>
+                                </td>
+                                <td><?php echo $category?></td>
+                                <td><?php echo $dateTime?></td>
+                                <td><?php echo $admin?></td>
+                                <td><img src="uploads/<?php echo $image ?>" width="70px"></td>
+                                <td>Comment</td>
+                                <td>
+                                     <a href="editPost.php?id=<?php echo $Id ?>">
+                                         <span class="btn btn-warning">Edit</span>
+                                     </a>
+                                     <a href="deletePost.php?id=<?php echo $Id ?>">
+                                         <span class="btn btn-danger">Delete</span>
+                                     </a>
+                                </td>
+                                <td>
+                                    <a href="fullPost.php?id=<?php echo $Id ?>">
+                                        <span class="btn btn-primary">Live Preview</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <?php  }?>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
     <footer class="bg-dark text-white">
         <div class="container">
             <div class="row">

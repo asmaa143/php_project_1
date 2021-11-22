@@ -4,6 +4,10 @@ require_once("includes/functions.php");
 require_once("includes/sessions.php");
 
 ?>
+<?php 
+
+$_SESSION["trackingUrl"]=$_SERVER["PHP_SELF"];
+confirmLogin() ?>
 
 <?php
 if (isset($_POST["Submit"])) {
@@ -12,7 +16,7 @@ if (isset($_POST["Submit"])) {
     $image=$_FILES["image"]["name"];
     $target="uploads/".basename($_FILES["image"]["name"]);
     $postContent=$_POST["postContent"];
-    $admin = "amit";
+    $admin = $_SESSION["username"];
     date_default_timezone_set("Africa/Cairo");
     $currentTime = time();
     $dateTime = strftime("%B-%d-%Y  %H:%M:%S", $currentTime);

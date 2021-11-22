@@ -3,6 +3,7 @@ require_once("includes/db.php");
 require_once("includes/functions.php");
 require_once("includes/sessions.php");
 ?>
+<?php confirmLogin() ?>
 <?php
 $searchQueryPram = $_GET["id"];
 $sql = "SELECT * FROM posts WHERE id='$searchQueryPram'";

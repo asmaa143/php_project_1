@@ -4,53 +4,56 @@ require_once("includes/functions.php");
 require_once("includes/sessions.php");
 
 ?>
-<?php confirmLogin() ?>
 <?php
-$searchQueryPram=$_GET["id"];
-$connectingDB;
+
+$_SESSION["trackingUrl"]=$_SERVER["PHP_SELF"]; 
+confirmLogin() ?>
+
+<?php
 if (isset($_POST["Submit"])) {
-    $postTitle = $_POST["title"];
-    $category=$_POST["category"];
-    $image=$_FILES["image"]["name"];
-    $target="uploads/".basename($_FILES["image"]["name"]);
-    $postContent=$_POST["postContent"];
-    $admin = "amit";
+    $username = $_POST["username"];
+    $name = $_POST["name"];
+    $password = $_POST["password"];
+    $confirmPassword = $_POST["confirmpassword"];
+    $Admin=$_SESSION["username"];
     date_default_timezone_set("Africa/Cairo");
     $currentTime = time();
     $dateTime = strftime("%B-%d-%Y  %H:%M:%S", $currentTime);
     
-    if (empty($postTitle)) {
+    if (empty($username)||empty($password)||empty($confirmPassword)) {
         $_SESSION["error"] = "All Fields must be filled out";
-        Redirect_to("addNewPost.php");
-    } elseif (strlen($postTitle) < 5) {
-        $_SESSION["error"] = "title must be more than 5 char";
-        Redirect_to("addNewPost.php");
-    } elseif (strlen($postContent) > 999) {
-        $_SESSION["error"] = "title must be less than 1000 char";
-        Redirect_to("addNewPost.php");
-    } else {
-        if(!empty($_FILES["image"]["name"])){
-            $sql="UPDATE posts SET 
-            title='$postTitle',category='$category',image='$image',post='$postContent'
-            WHERE id='$searchQueryPram'";
-        }else{
-            $sql="UPDATE posts SET 
-            title='$postTitle',category='$category',post='$postContent'
-            WHERE id='$searchQueryPram'";
-        }
-     
-       $excute=$connectingDB->query($sql);
+        Redirect_to("admins.php");
+    } elseif (strlen($password) < 4) {
+        $_SESSION["error"] = "password must be more than 3 char";
+        Redirect_to("categories.php");
+    } elseif ($password !== $confirmPassword) {
+        $_SESSION["error"] = "password and confirm should match";
+        Redirect_to("admins.php");
+    } elseif (checkUsernameExists($username)) {
+        $_SESSION["error"] = "Username exist";
+        Redirect_to("admins.php");
+     } else {
+    //    global $connectingDB;
+         $sql="INSERT INTO admins(datetime,username,password,aname,addedby) VALUES(:datetime,:username,:password,:aname,:addedby)";
+         $stmt=$connectingDB->prepare($sql);
+         $excute= $stmt->execute([
+              
+             ':datetime'=>$dateTime,
+             ':username'=>$username,  
+             ':password'=>$password,
+             ':aname'=>$name,
+             ':addedby'=>$Admin,
+         ]);
 
-
-         move_uploaded_file($_FILES["image"]["tmp_name"],$target);
          if($excute){
-            $_SESSION["success"] = "post Updated success";
-            Redirect_to("post.php");
+            $_SESSION["success"] = "Admin with id :".$connectingDB->lastInsertId()."added success";
+            Redirect_to("admins.php");
          }else{
             $_SESSION["error"] = "something wrong";
-            Redirect_to("post.php");
+            Redirect_to("admins.php");
          }
-              
+        
+         
     }
 }
 
@@ -80,7 +83,7 @@ if (isset($_POST["Submit"])) {
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Edit Post</title>
+    <title>Admin Page</title>
 </head>
 
 <body>
@@ -143,7 +146,7 @@ if (isset($_POST["Submit"])) {
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h1><i class="fas fa-edit" style="color: #27aae1;"></i>Edit Post</h1>
+                    <h1><i class="fas fa-edit" style="color: #27aae1;"></i>Manage Admins</h1>
                 </div>
             </div>
         </div>
@@ -156,63 +159,31 @@ if (isset($_POST["Submit"])) {
                 <?php
                 echo errorMessage();
                 echo successMessage();
-                 $sql="SELECT * FROM posts WHERE id='$searchQueryPram'";
-                 $stmt=$connectingDB->query($sql);
-                 while($dataRows=$stmt->fetch()){
-                          
-                            $titleUpdate=$dataRows["title"];
-                            $categoryUpdate=$dataRows["category"];
-                            $imageUpdate=$dataRows["image"];
-                            $postUpdate=$dataRows["post"];
-
-                 }
-
-
                 ?>
-                <form action="editPost.php?id=<?php echo $searchQueryPram?>" method="POST" enctype="multipart/form-data">
+                <form action="admins.php" method="POST">
                     <div class="card bg-secondary text-light mb-3">
                         <div class="card-header">
-                            <h1>Add New Post</h1>
+                            <h1>Add New Admin</h1>
                         </div>
                         <div class="card-body bg-dark">
                             <div class="row mb-3">
-                                <label for="title"><span class="labelInfo">Post Title</span></label>
-                                <input value="<?php echo  $titleUpdate ?>" type="text" name="title" id="title" class="form-control">
-                             </div>
-
-
-                             <div class="row mb-3">
-                                 <span class="labelInfo">Category : <?php echo $categoryUpdate   ?></span>
-                                 <br>
-                                <label for="category"><span class="labelInfo">Choose Category</span></label>
-                               <select class="form-control" name="category" id="category">
-                                   <?php    
-                                    $sql="SELECT id,title FROM category";
-                                    $stmt=$connectingDB->query($sql);
-                                     while($dataRows=$stmt->fetch()){
-                                         $Id=$dataRows["id"];
-                                         $categoryTitle=$dataRows["title"];
-                                   ?>
-                                      <option><?php  echo $categoryTitle?></option>
-                                      <?php  }?>
-                               </select>
+                                <label for="username"><span class="labelInfo">Username</span></label>
+                                <input type="text" name="username" id="username" class="form-control">
                             </div>
-
                             <div class="row mb-3">
-                                <span class="labelInfo">Image</span>
-                                <img class="w-25" src="uploads/<?php echo  $imageUpdate?>" alt="">
-                                <label for="image"><span class="labelInfo">Image</span></label>
-                                <input type="file" name="image" id="image" class="form-control">
-                             </div>
-
-                             <div class="row mb-3">
-                                <label for="post"><span class="labelInfo">Post</span></label>
-                               <textarea class="form-control" name="postContent" id="post" cols="30" rows="6">
-                                   <?php echo $postUpdate?>
-                               </textarea>
-                             </div>
-
-
+                                <label for="name"><span class="labelInfo">Name</span></label>
+                                <input type="text" name="name" id="name" class="form-control">
+                                <small class="text-muted">optionl</small>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="password"><span class="labelInfo">Password</span></label>
+                                <input type="password" name="password" id="password" class="form-control">
+                            </div>
+                            <div class="row mb-3">
+                                <label for="confirmpassword"><span class="labelInfo">Confirm Password</span></label>
+                                <input type="password" name="confirmpassword" id="confirmpassword" class="form-control">
+                            </div>
+                            
                             <div class="row">
                                 <div class="col-lg-6 mb-2">
                                     <div class="d-grid">

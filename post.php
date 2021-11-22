@@ -4,7 +4,11 @@ require_once("includes/functions.php");
 require_once("includes/sessions.php");
 
 ?>
+<?php 
 
+$_SESSION["trackingUrl"]=$_SERVER["PHP_SELF"];
+
+confirmLogin() ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -63,7 +67,7 @@ require_once("includes/sessions.php");
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a href="" class="nav-link">
+                        <a href="logout.php" class="nav-link">
                             <i class="fas fa-sign-out-alt text-danger"></i>
                             Logout
                         </a>

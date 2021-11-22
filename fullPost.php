@@ -8,6 +8,51 @@ require_once("includes/sessions.php");
 <?php   
 $searchQueryParam=$_GET["id"];
 ?>
+<?php
+
+if (isset($_POST["Submit"])) {
+    $name = $_POST["name"];
+    $email=$_POST["email"];
+    $comment=$_POST["comment"];
+    date_default_timezone_set("Africa/Cairo");
+    $currentTime = time();
+    $dateTime = strftime("%B-%d-%Y  %H:%M:%S", $currentTime);
+    
+    if (empty($name)||empty($email)||empty($comment)) {
+        $_SESSION["error"] = "All Fields must be filled out";
+        Redirect_to("fullPost.php?id= {$searchQueryParam}");
+    } elseif (strlen($comment) > 500) {
+        $_SESSION["error"] = "Comments must be less than 500  char";
+        Redirect_to("fullPost.php?id= {$searchQueryParam}");
+    
+    } else {
+    //    global $connectingDB;
+         $sql="INSERT INTO comments(datetime,name,email,comment,approvedby,status,post_id) VALUES(:datetime,:name,:email,:comment,'pendig','off',:postID)";
+         $stmt=$connectingDB->prepare($sql);
+         $excute= $stmt->execute([
+             ':datetime'=>$dateTime,
+             ':name'=>$name,
+             ':email'=> $email,
+             ':comment'=>$comment,
+             ':postID'=>$searchQueryParam
+        
+         ]);
+       
+         if($excute){
+            $_SESSION["success"] = "Comment added success";
+            Redirect_to("fullPost.php?id= {$searchQueryParam}");
+         }else{
+            $_SESSION["error"] = "something wrong";
+            Redirect_to("fullPost.php?id= {$searchQueryParam}");
+         }
+        
+         
+    }
+}
+
+
+
+?>
 
 
 <!DOCTYPE html>
@@ -140,6 +185,67 @@ $searchQueryParam=$_GET["id"];
                     </div>
                  </div>
                  <?php  }?>
+                 <span class="labelInfo">Comments</span>
+                 <br><br>
+                 <?php
+                 $sql="SELECT * FROM comments WHERE post_id='$searchQueryParam' AND status='on'";
+                 $stmt=$connectingDB->query($sql);
+                 while($dataRows=$stmt->fetch()){
+                     $commentname=$dataRows["name"];
+                     $commentcontent=$dataRows["comment"];
+                     $commentDate=$dataRows["datetime"];
+
+               
+              
+                 
+                 ?>
+
+                 <div>
+                     <div style="background-color:#F6F7F9;" class="media">
+                           <img class="float-start img-fluid " src="images/images.png"
+                            width="60px" alt="">
+                            <div class="media-body mr-2">
+                                <h6 class="lead"><?php echo $commentname?></h6>
+                                <p class="small"><?php echo $commentDate?></p>
+                                <p ><?php echo $commentcontent?></p>
+                            </div>
+                     </div>
+                 </div>
+                 <hr>
+                 <?php   }?>
+                 <!-- comment part -->
+                       <div class="mt-3">
+                          <form method="post" action="fullPost.php?id=<?php echo $searchQueryParam ?>">
+                              <div class="card mb-3">
+                                 <div class="card-header">
+                                     <h5 class="labelInfo">Share Your Comment</h5>
+                                 </div>
+                                 <div class="card-body">
+                                 <div class="input-group mb-3">
+                                          <span class="input-group-text">
+                                              <i class="fas fa-user"></i>
+                                            </span>
+                                            <input type="text" name="name" class="form-control">
+                                     </div>
+                                     <div class="input-group mb-3">
+                                          <span class="input-group-text">
+                                              <i class="fas fa-envelope"></i>
+                                            </span>
+                                            <input type="email" name="email" class="form-control">
+                                     </div>
+                                     <div class="input-group mb-3">
+                                         
+                                            <textarea class="form-control" name="comment" id="" ></textarea>
+                                     </div>
+                                     <div>
+                                         <button type="submit" name="Submit" class="btn btn-primary">Submit</button>
+                                     </div>
+                                 </div>
+                              </div>
+
+                        </form>
+                       </div>
+
             </div>
             <div class="col-sm-4">
 

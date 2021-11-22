@@ -4,11 +4,15 @@ require_once("includes/functions.php");
 require_once("includes/sessions.php");
 
 ?>
+<?php 
+
+$_SESSION["trackingUrl"]=$_SERVER["PHP_SELF"];
+confirmLogin() ?>
 
 <?php
 if (isset($_POST["Submit"])) {
     $category = $_POST["title"];
-    $admin = "amit";
+    $admin = $_SESSION["username"];
     date_default_timezone_set("Africa/Cairo");
     $currentTime = time();
     $dateTime = strftime("%B-%d-%Y  %H:%M:%S", $currentTime);

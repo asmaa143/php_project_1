@@ -9,61 +9,6 @@ require_once("includes/sessions.php");
 $_SESSION["trackingUrl"]=$_SERVER["PHP_SELF"];
 confirmLogin() ?>
 
-<?php
-if (isset($_POST["Submit"])) {
-    $category = $_POST["title"];
-    $admin = $_SESSION["username"];
-    date_default_timezone_set("Africa/Cairo");
-    $currentTime = time();
-    $dateTime = strftime("%B-%d-%Y  %H:%M:%S", $currentTime);
-    
-    if (empty($category)) {
-        $_SESSION["error"] = "All Fields must be filled out";
-        Redirect_to("categories.php");
-    } elseif (strlen($category) < 3) {
-        $_SESSION["error"] = "title must be more than 2 char";
-        Redirect_to("categories.php");
-    } elseif (strlen($category) > 49) {
-        $_SESSION["error"] = "title must be less than 50 char";
-        Redirect_to("categories.php");
-    } else {
-    //    global $connectingDB;
-         $sql="INSERT INTO category(title,author,datetime) VALUES(:title,:admin,:datetime)";
-         $stmt=$connectingDB->prepare($sql);
-         $excute= $stmt->execute([
-             ':title'=>$category,
-             ':admin'=>$admin,
-             ':datetime'=>$dateTime,
-         ]);
-
-         if($excute){
-            $_SESSION["success"] = "category with id :".$connectingDB->lastInsertId()."added success";
-            Redirect_to("categories.php");
-         }else{
-            $_SESSION["error"] = "something wrong";
-            Redirect_to("categories.php");
-         }
-        
-         
-    }
-}
-
-
-?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -74,7 +19,7 @@ if (isset($_POST["Submit"])) {
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Categories</title>
+    <title>Comments</title>
 </head>
 
 <body>
@@ -83,7 +28,9 @@ if (isset($_POST["Submit"])) {
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">AMIT.COM</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -133,77 +80,50 @@ if (isset($_POST["Submit"])) {
     </nav>
     <div style="height: 10px; background: #27aae1;"></div>
 
+
     <header class="bg-dark text-white py-3">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h1><i class="fas fa-edit" style="color: #27aae1;"></i>Manage Category</h1>
+                  <h1><i class="fas fa-comments" style="color: #27aae1;"></i>Manage Comment</h1>
                 </div>
             </div>
         </div>
     </header>
-
-    <!-- start mainArea -->
+  
+  
     <section class="container py-2 mb-4">
-        <div class="row">
-            <div class="col-lg-10 offset-lg-1" style="min-height: 450px;">
-                <?php
+
+           <div class="row">
+               <div class="col-lg-12">
+               <?php
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <form action="categories.php" method="POST">
-                    <div class="card bg-secondary text-light mb-3">
-                        <div class="card-header">
-                            <h1>Add New Category</h1>
-                        </div>
-                        <div class="card-body bg-dark">
-                            <div class="row mb-3">
-                                <label for="title"><span class="labelInfo">Category Title</span></label>
-                                <input type="text" name="title" id="title" class="form-control">
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6 mb-2">
-                                    <div class="d-grid">
-                                        <a class="btn btn-warning" href="dashboard.php">
-                                            <i class="fas fa-arrow-left"></i>
-                                            Back To Dashboard
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-2">
-                                    <div class="d-grid">
-                                        <button type="submit" name="Submit" class="btn btn-success">
-                                            <i class="fas fa-check"></i>
-                                            Add
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <h2>Category</h2>
+                 <h2>Un-Approved Comments</h2>
                  <table class="table table-hover table-striped">
                     <thead class="table-dark">
                         <tr>
                             <th>No.</th>
                             <th>Name</th>
                             <th>Date&Time</th>
-                            <th>Creater Name</th>
-                            <th>Action</th>
+                            <th>Comment</th>
+                            <th>Approve</th>
+                            <th>Delete</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <?php      
                     
-                    $sql="SELECT * FROM category  ORDER BY id desc";
+                    $sql="SELECT * FROM comments WHERE status='off' ORDER BY id desc";
                     $excute=$connectingDB->query($sql);
                     $sr=0;
                     while($dataRow=$excute->fetch()){
-                        $cattid=$dataRow["id"];
-                        $catdate=$dataRow["datetime"];
-                        $catname=$dataRow["title"];
-                        $catAuthor=$dataRow["author"];
-                    
+                        $commentid=$dataRow["id"];
+                        $commentdate=$dataRow["datetime"];
+                        $commentname=$dataRow["name"];
+                        $comment=$dataRow["comment"];
+                        $commentpostid=$dataRow["post_id"];
                         $sr++;
                 
                     
@@ -211,21 +131,67 @@ if (isset($_POST["Submit"])) {
                     <tbody>
                         <tr>
                             <td><?php echo $sr  ?></td>
-                            <td><?php  echo $catdate ?></td>
-                            <td><?php  echo $catname ?></td>
-                            <td><?php  echo $catAuthor ?></td>
-                       
-                        <td><a class="btn btn-danger" href="deleteCategory.php?id=<?php echo $cattid ?>">Delete</a></td>
-                      
+                            <td><?php  echo $commentname ?></td>
+                            <td><?php  echo $commentdate ?></td>
+                            <td><?php  echo $comment ?></td>
+                            <td><a class="btn btn-success" href="approveComment.php?id=<?php echo $commentid ?>">
+                            Approve</a>
+                        </td>
+                        <td><a class="btn btn-danger" href="deleteComment.php?id=<?php echo $commentid ?>">Delete</a></td>
+                        <td><a class="btn btn-primary" href="fullPost.php?id=<?php echo   $commentpostid ?>">Live Preview</a></td>
                         </tr>
                     </tbody>
                     <?php   }?>
                  </table>
-            </div>
-        </div>
 
+                 <h2>Approved Comments</h2>
+                 <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Name</th>
+                            <th>Date&Time</th>
+                            <th>Comment</th>
+                            <th>Dis Approve</th>
+                            <th>Delete</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <?php      
+                    
+                    $sql="SELECT * FROM comments WHERE status='on' ORDER BY id desc";
+                    $excute=$connectingDB->query($sql);
+                    $sr=0;
+                    while($dataRow=$excute->fetch()){
+                        $commentid=$dataRow["id"];
+                        $commentdate=$dataRow["datetime"];
+                        $commentname=$dataRow["name"];
+                        $comment=$dataRow["comment"];
+                        $commentpostid=$dataRow["post_id"];
+                        $sr++;
+                
+                    
+                    ?>
+                    <tbody>
+                        <tr>
+                            <td><?php echo $sr  ?></td>
+                            <td><?php  echo $commentname ?></td>
+                            <td><?php  echo $commentdate ?></td>
+                            <td><?php  echo $comment ?></td>
+                            <td><a class="btn btn-success" href="disapproveComment.php?id=<?php echo $commentid ?>">
+                           Dis Approve</a>
+                        </td>
+                        <td><a class="btn btn-danger" href="deleteComment.php?id=<?php echo $commentid ?>">Delete</a></td>
+                        <td><a class="btn btn-primary" href="fullPost.php?id=<?php echo   $commentpostid ?>">Live Preview</a></td>
+                        </tr>
+                    </tbody>
+                    <?php   }?>
+                 </table>
+               </div>
+           </div>
     </section>
-    <!-- end mainArea -->
+
+
 
     <footer class="bg-dark text-white">
         <div class="container">

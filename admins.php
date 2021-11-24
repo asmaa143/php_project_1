@@ -205,6 +205,48 @@ if (isset($_POST["Submit"])) {
                         </div>
                     </div>
                 </form>
+                <h2>Admin</h2>
+                 <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No.</th>     
+                            <th>Date&Time</th>
+                            <th>Username</th>
+                            <th>Added by</th>
+                            <th>Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <?php      
+                    
+                    $sql="SELECT * FROM admins  ORDER BY id desc";
+                    $excute=$connectingDB->query($sql);
+                    $sr=0;
+                    while($dataRow=$excute->fetch()){
+                        $adminid=$dataRow["id"];
+                        $admindate=$dataRow["datetime"];
+                        $adminuname=$dataRow["username"];
+                        $adminAuthor=$dataRow["addedby"];
+                        $adminname=$dataRow["aname"];
+                    
+                        $sr++;
+                
+                    
+                    ?>
+                    <tbody>
+                        <tr>
+                            <td><?php echo $sr  ?></td>
+                            <td><?php  echo $admindate ?></td>
+                            <td><?php  echo $adminuname ?></td>
+                            <td><?php  echo $adminAuthor ?></td>
+                            <td><?php  echo $adminname ?></td>
+                       
+                        <td><a class="btn btn-danger" href="deleteAdmin.php?id=<?php echo $adminid ?>">Delete</a></td>
+                      
+                        </tr>
+                    </tbody>
+                    <?php   }?>
+                 </table>
             </div>
         </div>
 

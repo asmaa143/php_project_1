@@ -174,7 +174,25 @@ confirmLogin() ?>
                                 <td><?php echo $dateTime?></td>
                                 <td><?php echo $admin?></td>
                                 <td><img src="uploads/<?php echo $image ?>" width="70px"></td>
-                                <td>Comment</td>
+                                <td>
+                                <?php
+                               
+                               $total=approveComments($Id);
+                               if($total >0){
+                                   ?>
+                                  <span class="badge bg-success"><?php echo $total?></span>
+                                 
+                            <?php } ?>
+                            <?php
+                               
+                               $total=disPpproveComments($Id);
+                               if($total >0){
+                                   ?>
+                                  <span class="badge bg-danger"><?php echo $total?></span>
+                               
+                            <?php } ?>
+  
+                                </td>
                                 <td>
                                      <a href="editPost.php?id=<?php echo $Id ?>">
                                          <span class="btn btn-warning">Edit</span>

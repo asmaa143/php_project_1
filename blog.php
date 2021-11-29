@@ -81,62 +81,198 @@ require_once("includes/sessions.php");
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <?php   
-                 if(isset($_GET["searchBtn"])){
-                     $search=$_GET["search"];
-                     $sql="SELECT * FROM posts
+                <?php
+                if (isset($_GET["searchBtn"])) {
+                    $search = $_GET["search"];
+                    $sql = "SELECT * FROM posts
                      WHERE datetime LIKE :search
                      OR title LIKE :search
                      OR category LIKE :search
                      OR post LIKE :search  
                      ";
 
-                     $stmt=$connectingDB->prepare($sql);
-                     $stmt->execute([
-                         ":search"=> '%'.$search.'%',
-                     ]);                   
-                 }
+                    $stmt = $connectingDB->prepare($sql);
+                    $stmt->execute([
+                        ":search" => '%' . $search . '%',
+                    ]);
+                } elseif (isset($_GET["page"])) {
+                    $page = $_GET["page"];
+                    if ($page == 0 || $page < 1) {
+                        $showPostForm = 0;
+                    } else {
+                        $showPostForm = ($page * 4) - 4;
+                    }
 
-                 else{
+                    $sql = "SELECT * FROM posts ORDER BY id desc LIMIT $showPostForm,4";
+                    $stmt = $connectingDB->query($sql);
+
+
+                }elseif(isset($_GET["cat"])){
+                     $cat=$_GET["cat"];
+                     $sql="SELECT * FROM posts WHERE category='$cat' ORDER BY id desc";
+                     $stmt=$connectingDB->query($sql);
+
+                   
+                } else {
                     $connectingDB;
-                    $sql="SELECT * FROM posts ORDER BY id desc";
-                    $stmt=$connectingDB->query($sql);
-                 }
+                    $sql = "SELECT * FROM posts ORDER BY id desc";
+                    $stmt = $connectingDB->query($sql);
+                }
 
-                 while($dataRows=$stmt->fetch()){
-                    $Id=$dataRows["id"];
-                    $dateTime=$dataRows["datetime"];
-                    $title=$dataRows["title"];
-                    $category=$dataRows["category"];
-                    $admin=$dataRows["author"];
-                    $image=$dataRows["image"];
-                    $post=$dataRows["post"];
-              
+                while ($dataRows = $stmt->fetch()) {
+                    $Id = $dataRows["id"];
+                    $dateTime = $dataRows["datetime"];
+                    $title = $dataRows["title"];
+                    $category = $dataRows["category"];
+                    $admin = $dataRows["author"];
+                    $image = $dataRows["image"];
+                    $post = $dataRows["post"];
+
                 ?>
-                <div class="card mb-3">
-                    <img style="max-height: 300px;" 
-                    src="uploads/<?php echo $image?>" class="img-fluid card-img-top" alt="">
-                    <div class="card-body">
-                         <h4 class="card-title"><?php echo $title?></h4>
-                         <small class="text-muted">Wrriten By : <?php echo $admin?> 
-                         on <?php echo $dateTime?></small>
-                         <span class="badge bg-dark text-light ">Comments 20</span>
-                         <hr>
-                         <p class="card-text">
-                                  <?php  if(strlen($post) >150){$post=substr($post,0,150). '...';}
-                                  echo $post;
-                                  
-                                  ?>
-                                  <a href="fullPost.php?id=<?php echo $Id?>" class="float-end">
-                                      <span class="btn btn-info">Read More</span>
-                                  </a>
-                         </p>
-                    </div>
-                 </div>
-                 <?php  }?>
-            </div>
-            <div class="col-sm-4">
+                    <div class="card mb-3">
+                        <img style="max-height: 300px;" src="uploads/<?php echo $image ?>" class="img-fluid card-img-top" alt="">
+                        <div class="card-body">
+                            <h4 class="card-title"><?php echo $title ?></h4>
+                            <small class="text-muted">Wrriten By : <?php echo $admin ?>
+                                on <?php echo $dateTime ?></small>
+                            <span class="badge bg-dark text-light ">Comments <?php echo approveComments($Id); ?> </span>
+                            <hr>
+                            <p class="card-text">
+                                <?php if (strlen($post) > 150) {
+                                    $post = substr($post, 0, 150) . '...';
+                                }
+                                echo $post;
 
+                                ?>
+                                <a href="fullPost.php?id=<?php echo $Id ?>" class="float-end">
+                                    <span class="btn btn-info">Read More</span>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                <?php  } ?>
+
+                <nav>
+                    <ul class="pagination pagination-md">
+
+                        <?php
+                        if (isset($page)) {
+                            if ($page > 1) {
+                        ?>
+
+                                <li class="page-item">
+                                    <a class="page-link" href="blog.php?page=<?php echo $page - 1 ?>">&laquo;</a>
+                                </li>
+                        <?php }
+                        } ?>
+
+                        <?php
+                        $sql = "SELECT COUNT(*) FROM posts";
+                        $stmt = $connectingDB->query($sql);
+                        $rowPaginate = $stmt->fetch();
+                        $totalPosts = array_shift($rowPaginate);
+                        $postPaginate = $totalPosts / 4;
+                        $postPaginate = ceil($postPaginate);
+
+                        for ($i = 1; $i <= $postPaginate; $i++) {
+                            if(isset($page)){
+                            if ($i == $page) { ?>
+                                <li class="page-item active">
+                                    <a href="blog.php?page=<?php echo $i ?>" class="page-link"><?php echo $i ?></a>
+                                </li>
+                            <?php
+                            } else {
+                            ?>
+                                <li class="page-item">
+                                    <a href="blog.php?page=<?php echo $i ?>" class="page-link"><?php echo $i ?></a>
+                                </li>
+
+                        <?php }
+                        } }?>
+
+
+
+                        <?php
+
+                        if (isset($page) && !empty($page)) {
+                            if ($page + 1 <= $postPaginate) {
+                        ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="blog.php?page=<?php echo $page + 1 ?>">&raquo;</a>
+                                </li>
+                        <?php }
+                        } ?>
+
+
+
+                    </ul>
+                </nav>
+
+
+            </div>
+
+            <div class="col-sm-4">
+                  <div class="card mt-4">
+                      <div class="card-body">
+                          <img src="images/images.png" class="d-block img-fluid mb-3" alt="">
+                          <div class="text-center">
+                           Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                           Odio, harum qui reprehenderit minus pariatur asperiores accusantium 
+                           facilis facere dolor dignissimos placeat inventore exercitationem iure,
+                            dolorum sapiente, impedit mollitia magnam labore.
+
+                          </div>
+                      </div>
+                  </div>
+                  <br>
+                  <div class="card">
+                      <div class="card-header bg-dark text-light">
+                         <h2 class="lead">Sign Up</h2>
+                      </div>
+                      <div class="card-body">
+                          <div class="d-grid">
+                             <button class="btn btn-success text-center text-white">Jion Us</button>
+                             <button class="btn btn-danger mt-1 text-center text-white">Login</button>
+                          </div>
+                          <div class="input-group mt-2 mb-3">
+                                <input type="Email" class="form-control">
+                                <div class="input-group-append">
+                                <button class="btn btn-primary text-white text-center">Subscribe</button>
+                                </div>
+                          </div>
+                      </div>
+                  </div>
+                  <br>
+                  <div class="card">
+
+                    <div class="card-header bg-primary text-light">
+                         <h2 class="lead">Categories</h2>
+                    </div>
+                    <div class="card-body">
+
+                      <?php 
+                      $sql="SELECT * FROM category ORDER BY id desc";
+                      $stmt=$connectingDB->query($sql);
+                      while($dataRow=$stmt->fetch()){
+                          $catId=$dataRow["id"];
+                          $catName=$dataRow["title"];
+
+                          ?>
+
+
+                          <a class="text-decoration-none" href="blog.php?cat=<?php echo $catName?>">
+                    
+                            <span class="text-info"><?php echo $catName ?></span><br>
+                        </a>
+                     <?php } ?>
+                            
+                           
+                    </div>
+                  </div>
+                  <br>
+                  <div class="card">
+                      
+                  </div>
             </div>
         </div>
     </div>

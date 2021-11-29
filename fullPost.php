@@ -174,7 +174,7 @@ if (isset($_POST["Submit"])) {
                          <h4 class="card-title"><?php echo $title?></h4>
                          <small class="text-muted">Wrriten By : <?php echo $admin?> 
                          on <?php echo $dateTime?></small>
-                         <span class="badge bg-dark text-light ">Comments 20</span>
+                         <span class="badge bg-dark text-light ">Comments  <?php echo approveComments($Id); ?></span>
                          <hr>
                          <p class="card-text">
                                   <?php  

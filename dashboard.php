@@ -170,6 +170,65 @@ confirmLogin() ?>
 
 
                 </div>
+                <div class="col-lg-10">
+                  <h1>Top Posts</h1>
+                  <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                         <tr>
+                             <th>#</th>
+                             <th>Title</th>
+                             <th>Date & Time</th>
+                             <th>Author</th>
+                             <th>Comments</th>
+                             <th>Details</th>
+                             
+                         </tr>
+                    </thead>
+                  <?php
+                    $sql="SELECT * FROM posts ORDER BY id desc LIMIT 0,5";
+                    $stmt=$connectingDB->query($sql);
+                    $sr=0;
+                    while($dataRows=$stmt->fetch()){
+                        $Id=$dataRows["id"];
+                        $datetime=$dataRows["datetime"];
+                        $title=$dataRows["title"];
+                        $author=$dataRows["author"];
+                        $sr++;
+                  
+                  ?>
+                    <tbody>
+                        <tr>
+                            <td><?php  echo $sr;?></td>
+                            <td><?php  echo $title;?></td>
+                            <td><?php  echo $datetime;?></td>
+                            <td><?php  echo $author;?></td>
+                            <td>
+                               <?php
+                               
+                               $total=approveComments($Id);
+                               if($total >0){
+                                   ?>
+                                  <span class="badge bg-success"><?php echo $total?></span>
+                                 
+                            <?php } ?>
+                            <?php
+                               
+                               $total=disPpproveComments($Id);
+                               if($total >0){
+                                   ?>
+                                  <span class="badge bg-danger"><?php echo $total?></span>
+                               
+                            <?php } ?>
+  
+                            </td>
+                            <td>
+                               <a class="btn btn-info" href="fullPost.php?id=<?php echo $Id?>">Preview</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <?php   }?>
+                  </table>
+                </div>
             </div>
         </div>
     </section>

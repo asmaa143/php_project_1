@@ -54,6 +54,27 @@ function confirmLogin(){
    }
 }
 
+function approveComments($Id){
+   global $connectingDB;
+     
+   $sqlApproved="SELECT COUNT(*) FROM comments WHERE post_id='$Id' AND status = 'on' ";
+   $stmtApproved=$connectingDB->query($sqlApproved);
+   $rowsTotal=$stmtApproved->fetch();
+   $total=array_shift($rowsTotal);
+   return $total;
+}
+
+
+function disPpproveComments($Id){
+   global $connectingDB;
+     
+   $sqlApproved="SELECT COUNT(*) FROM comments WHERE post_id='$Id' AND status = 'off' ";
+   $stmtApproved=$connectingDB->query($sqlApproved);
+   $rowsTotal=$stmtApproved->fetch();
+   $total=array_shift($rowsTotal);
+   return $total;
+}
+
 
 
 
